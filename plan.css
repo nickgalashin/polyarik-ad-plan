@@ -1,0 +1,35 @@
+.tabs{flex-wrap:wrap}
+.plan-tools{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:22px 0}
+.plan-tools [role=status]{flex:1 1 280px;font-size:13px;color:var(--ink-2)}
+.plan-tools button,.add-note,.remove-note,.dialog-close{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:9px 12px;cursor:pointer}
+button:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--frost);outline-offset:3px}
+.plan-source{font-size:12px;color:var(--muted);margin:0 0 12px}
+.plan-notes{border-top:1px solid var(--line-soft);margin-top:16px;padding-top:12px}
+.plan-notes h4{font-size:12px;color:var(--ink-2);margin:0 0 10px;font-weight:600}
+.note-row{display:flex;gap:6px;margin-bottom:8px;align-items:start}
+.note-row textarea{font:inherit;font-size:13px;color:var(--ink);background:var(--ground);border:1px solid var(--line);border-radius:8px;padding:9px;min-width:0;width:100%;resize:vertical}
+.remove-note{font-size:20px;padding:4px 10px;min-height:36px}
+.add-note{width:100%;border-style:dashed;color:var(--ink-2);font-size:13px}
+.add-note:hover,.plan-tools button:hover{border-color:var(--frost);color:var(--ink)}
+.phase-legend{display:flex;gap:16px;flex-wrap:wrap;color:var(--ink-2);font-size:13px;margin:18px 0}
+.prep-key::before,.launch-key::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px}
+.prep-key::before{background:var(--frost)}.launch-key::before{background:var(--mid)}
+.plan-calendar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.calendar-month{border:1px solid var(--line-soft);border-radius:12px;background:var(--card);padding:18px;box-shadow:var(--shadow)}
+.calendar-month h3{font-family:var(--f-display);font-size:19px;margin:0 0 14px}
+.day-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.weekday{text-align:center;font-size:11px;color:var(--muted);padding-bottom:6px}
+.plan-day{font:inherit;border:0;border-radius:6px;min-width:0;min-height:55px;padding:5px 2px;cursor:pointer;text-align:center;color:var(--ink)}
+.plan-day.prep{background:var(--frost-soft)}.plan-day.launch{background:var(--mid-soft)}
+.plan-day:hover{box-shadow:inset 0 0 0 2px var(--ink-2)}
+.day-number{display:block;font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
+.day-phase{display:block;font-size:9px;line-height:1.4;hyphens:manual}
+.calendar-products{font-size:13px;color:var(--ink-2);margin-top:14px}
+.calendar-products summary{cursor:pointer;min-height:30px}.calendar-products li{margin:5px 0}
+.plan-dialog{font:inherit;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:16px;padding:24px;width:min(560px,calc(100% - 32px));max-height:85vh;overflow:auto;box-shadow:var(--shadow)}
+.plan-dialog::backdrop{background:rgba(0,0,0,.5)}
+.plan-dialog h3{font-family:var(--f-display);font-size:20px;clear:both;padding-top:12px}
+.plan-dialog li{margin:8px 0}.dialog-close{float:right}.day-note{white-space:pre-wrap;overflow-wrap:anywhere}
+@media(max-width:720px){.plan-calendar{grid-template-columns:1fr}.calendar-month{padding:14px}}
+@media(max-width:380px){.day-phase{font-size:8px}.day-grid{gap:3px}.calendar-month{padding:10px}}
+@media print{.plan-tools,.add-note,.remove-note{display:none}.calendar-month{break-inside:avoid}.plan-day{print-color-adjust:exact;-webkit-print-color-adjust:exact}}
