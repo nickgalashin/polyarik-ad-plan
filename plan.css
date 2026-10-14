@@ -47,3 +47,15 @@ button:disabled{opacity:.5;cursor:not-allowed}
 @media(max-width:720px){.plan-calendar{grid-template-columns:1fr}.calendar-month{padding:14px}}
 @media(max-width:380px){.day-phase{font-size:8px}.day-grid{gap:3px}.calendar-month{padding:10px}}
 @media print{.plan-tools,.add-note,.remove-note{display:none}.calendar-month{break-inside:avoid}.plan-day{print-color-adjust:exact;-webkit-print-color-adjust:exact}}
+.schedule-name,.saved-note{font:inherit;color:inherit;background:transparent;border:0;padding:0;text-align:left;cursor:pointer}
+.schedule-name:hover,.saved-note:hover{text-decoration:underline;text-underline-offset:3px}
+.schedule-subtitle{font-size:14px;line-height:1.5;overflow-wrap:anywhere}
+.schedule-phase{border:1px solid var(--line);border-radius:10px;padding:14px;margin:16px 0;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.schedule-phase legend{font-weight:600;padding:0 6px}.schedule-phase label{font-size:12px;min-width:0}
+.schedule-phase input{display:block;width:100%;box-sizing:border-box;margin-top:6px;font:inherit;font-size:14px;padding:9px;color:var(--ink);background:var(--ground);border:1px solid var(--line);border-radius:7px}
+.schedule-shift{font-size:13px}.schedule-shift summary{cursor:pointer}.schedule-shift input{width:65px;padding:8px;margin-right:8px}
+.schedule-dialog button:not(.schedule-name){font:inherit;border:1px solid var(--line);border-radius:8px;padding:9px 12px;background:var(--card);color:var(--ink);cursor:pointer}
+.schedule-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}.schedule-dialog .schedule-save{background:var(--ink);color:var(--card)}
+.schedule-feedback{font-size:13px;min-height:18px;line-height:1.5}.campaign-dates{display:block;color:var(--muted);font-size:11px;margin-top:4px}
+.plan-day.mixed{background:linear-gradient(135deg,var(--frost-soft) 50%,var(--mid-soft) 50%)}.plan-day.empty{background:var(--ground);color:var(--muted)}
+@media(max-width:380px){.schedule-phase{gap:8px;padding:10px}.schedule-phase input{font-size:12px;padding:7px}.schedule-dialog{padding:16px}}

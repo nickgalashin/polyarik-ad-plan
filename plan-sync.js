@@ -1,4 +1,4 @@
-function attachPlanEditor(initial, monthNames, status, cards, onNotesChange) {
+function attachPlanEditor(initial, monthNames, status, cards, onNotesChange, onScheduleOpen) {
   'use strict';
   const api = 'https://api.github.com/repos/nickgalashin/polyarik-ad-plan/contents/plan-data.json';
   let state = initial, token = '', actor = '', busy = false, queue = Promise.resolve();
@@ -39,10 +39,12 @@ function attachPlanEditor(initial, monthNames, status, cards, onNotesChange) {
   function renderLog() {
     log.replaceChildren();
     history.querySelector('summary').textContent='История изменений · '+state.actions.length;
-    const names={add:'Добавлено',edit:'Изменено',delete:'Удалено'};
+    const names={add:'Добавлено',edit:'Изменено',delete:'Удалено',schedule:'Изменены сроки'};
+    const display=(action,value)=>{if(value===null)return '—';if(action.type!=='schedule')return value;const schedule=JSON.parse(value);return 'Подготовка: '+schedule.prepStart+' — '+schedule.prepEnd+'; запуск: '+schedule.launchStart+' — '+schedule.launchEnd;};
     state.actions.slice(-100).reverse().forEach(action=>{
       const row=el('li'); row.append(el('b','',names[action.type]+' · '+monthNames[action.month]),el('div','',action.actor+' · '+new Date(action.at).toLocaleString('ru-RU')));
-      const values=el('details');values.append(el('summary','','Показать текст'),el('p','history-text','Было: '+(action.before===null?'—':action.before)),el('p','history-text','Стало: '+(action.after===null?'—':action.after)));row.append(values);log.append(row);
+      if(action.productName)row.append(el('div','',action.productName));
+      const values=el('details');values.append(el('summary','','Показать изменение'),el('p','history-text','Было: '+display(action,action.before)),el('p','history-text','Стало: '+display(action,action.after)));row.append(values);log.append(row);
     });
     if(!state.actions.length)log.append(el('li','','Изменений пока нет'));
   }
@@ -84,7 +86,8 @@ function attachPlanEditor(initial, monthNames, status, cards, onNotesChange) {
         });
         const accept=el('button','accept-common','Принять общую версию');accept.type='button';accept.hidden=true;
         accept.addEventListener('click',()=>{if(!window.confirm('Отбросить ваш несохранённый текст и принять общую версию?'))return;clearTimeout(timers.get(note.id));drafts.delete(note.id);draw(month);});
-        const saved=el('div','saved-note');
+        const saved=el('button','saved-note');saved.type='button';saved.title='Изменить сроки подготовки и запуска';
+        saved.addEventListener('click',()=>{const current=state.notes.find(item=>item.id===note.id);if(current&&onScheduleOpen)onScheduleOpen({key:'note:'+current.id,month,name:current.text});});
         const edit=el('button','edit-note','Изменить');edit.type='button';
         edit.addEventListener('click',()=>{if(!requireAccess())return;row.dataset.editing='true';draw(month);box.focus();});
         box.addEventListener('click',()=>{if(box.readOnly)requireAccess();});
@@ -200,5 +203,10 @@ function attachPlanEditor(initial, monthNames, status, cards, onNotesChange) {
   try{const previous=JSON.parse(localStorage.getItem('polyarik-ad-plan-2026-2027-v1')||'null');if(previous&&Object.values(previous).some(list=>Array.isArray(list)&&list.length)){const backup=el('button','','Скачать прежние заметки из браузера');backup.type='button';backup.addEventListener('click',()=>download({version:1,period:PlanJSON.period,notes:previous},'polyarik-old-notes.json'));tools.append(backup);}}catch(_){}
   updateUI();message('Общий JSON загружен. Для редактирования подключите GitHub.');
   reload(true);
-  return month=>state.notes.filter(note=>note.month===month&&note.text.trim()).map(note=>note.text);
+  const getNotes=month=>state.notes.filter(note=>note.month===month&&note.text.trim()).map(note=>note.text);
+  getNotes.records=()=>state.notes.filter(note=>note.text.trim());
+  getNotes.schedules=()=>state.schedules||[];
+  getNotes.saveSchedule=op=>mutate([op]);
+  getNotes.requireAccess=requireAccess;
+  return getNotes;
 }

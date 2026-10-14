@@ -34,3 +34,25 @@ test('deleted IDs cannot be recreated and malformed input is rejected atomically
   assert.throws(()=>apply(initial(),[add,{...add,id:'invalid',noteId:'bad',month:12}],'anna'));
   assert.equal(initial().notes.length,0);
 });
+const {defaultSchedule,validSchedule,shiftSchedule}=context.PlanJSON;
+const scheduleOp=(key='top:9:0',month=9)=>({id:'schedule-'+key,type:'schedule',key,month,name:'Товар',baseRevision:0,schedule:shiftSchedule(defaultSchedule(month),20)});
+test('calendar defaults and UTC shifts cross month/year boundaries',()=>{
+ assert.equal(defaultSchedule(1).launchEnd,'2027-02-28');assert.equal(defaultSchedule(9).prepStart,'2026-10-01');
+ assert.equal(shiftSchedule(defaultSchedule(11),31).prepStart,'2027-01-01');
+ assert.equal(validSchedule({...defaultSchedule(1),prepEnd:'2027-02-29'}),false);
+ assert.equal(validSchedule({...defaultSchedule(9),launchStart:'2026-10-14'}),false);
+ assert.equal(validSchedule({prepStart:'2028-02-28',prepEnd:'2028-02-29',launchStart:'2028-03-01',launchEnd:'2028-03-02'}),true);
+});
+test('schedule edits audited, independent edits merge, stale same-product edits conflict',()=>{
+ const start=initial(),one=apply(start,[scheduleOp()],'anna');validate(one);
+ assert.equal(JSON.stringify(one.rankings),JSON.stringify(start.rankings));assert.equal(one.notes.length,start.notes.length);
+ assert.equal(JSON.parse(one.actions[0].before).prepStart,'2026-10-01');assert.equal(JSON.parse(one.actions[0].after).prepStart,'2026-10-21');assert.equal(one.actions[0].actor,'anna');
+ const two=apply(one,[scheduleOp('top:9:1')],'boris');assert.equal(two.schedules.length,2);
+ assert.throws(()=>apply(two,[{...scheduleOp(),id:'stale'}],'boris'),e=>e.conflict);
+ assert.equal(apply(two,[scheduleOp()],'anna').actions.length,2);
+});
+test('manual schedule follows stable note ID and is removed with note',()=>{
+ const one=apply(initial(),[add],'anna'),two=apply(one,[scheduleOp('note:note-1')],'anna');
+ const three=apply(two,[{id:'remove',type:'delete',noteId:'note-1',month:9,baseRevision:1}],'anna');
+ assert.equal(three.schedules.length,0);assert.throws(()=>apply(three,[{...scheduleOp('note:note-1'),id:'after-delete'}],'boris'));
+});
