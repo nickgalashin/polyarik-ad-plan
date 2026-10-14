@@ -1,4 +1,4 @@
-function attachPlanEditor(initial, monthNames, status, cards) {
+function attachPlanEditor(initial, monthNames, status, cards, onNotesChange) {
   'use strict';
   const api = 'https://api.github.com/repos/nickgalashin/polyarik-ad-plan/contents/plan-data.json';
   let state = initial, token = '', actor = '', busy = false, queue = Promise.resolve();
@@ -42,6 +42,7 @@ function attachPlanEditor(initial, monthNames, status, cards) {
   }
   function updateUI() {
     cards.forEach((_,month)=>draw(month)); renderLog();
+    if(onNotesChange)onNotesChange();
   }
   function draw(month) {
     const host=hosts[month];
@@ -58,7 +59,7 @@ function attachPlanEditor(initial, monthNames, status, cards) {
         box.addEventListener('input',()=>{
           const current=state.notes.find(n=>n.id===note.id);
           const previous=drafts.get(note.id);
-          drafts.set(note.id,{text:box.value,month,baseRevision:previous?previous.baseRevision:current?.revision});
+          const draft=previous||{month,baseRevision:current?.revision};draft.text=box.value;drafts.set(note.id,draft);
           clearTimeout(timers.get(note.id));
           if(!previous?.conflict)timers.set(note.id,setTimeout(()=>saveDraft(note.id),1500));
           message('Есть несохранённые изменения…');
@@ -76,9 +77,21 @@ function attachPlanEditor(initial, monthNames, status, cards) {
         });
         const accept=el('button','accept-common','Принять общую версию');accept.type='button';accept.hidden=true;
         accept.addEventListener('click',()=>{if(!window.confirm('Отбросить ваш несохранённый текст и принять общую версию?'))return;clearTimeout(timers.get(note.id));drafts.delete(note.id);draw(month);});
-        controls.append(remove,accept);row.append(box,controls,el('div','common-version'));host.append(row);
+        const saved=el('div','saved-note');
+        const edit=el('button','edit-note','Изменить');edit.type='button';
+        edit.addEventListener('click',()=>{row.dataset.editing='true';draw(month);box.focus();});
+        controls.prepend(edit);
+        controls.append(remove,accept);row.append(saved,box,controls,el('div','common-version'));host.append(row);
       }
       const box=row.querySelector('textarea'),draft=drafts.get(note.id);
+      const showSaved=Boolean(note.text.trim()&&!draft&&row.dataset.editing!=='true');
+      row.querySelector('.saved-note').textContent=note.text;
+      row.querySelector('.saved-note').hidden=!showSaved;
+      box.hidden=showSaved;
+      row.classList.toggle('is-saved',showSaved);
+      row.querySelector('.edit-note').hidden=!showSaved||!token;
+      row.querySelector('.edit-note').setAttribute('aria-label','Изменить поле '+(index+1)+': '+monthNames[month]);
+      row.querySelector('.remove-note').hidden=!token&&showSaved;
       box.disabled=!token;
       if(document.activeElement!==box||!draft)box.value=draft?draft.text:note.text;
       box.setAttribute('aria-label',monthNames[month]+': поле '+(index+1));
@@ -132,7 +145,7 @@ function attachPlanEditor(initial, monthNames, status, cards) {
       await mutate([{id:draft.operationId ||= crypto.randomUUID(),type:'edit',noteId:id,month:draft.month,text,baseRevision}]);
       const current=drafts.get(id);
       if(current===draft){
-        if(current.text===text)drafts.delete(id);
+        if(current.text===text){drafts.delete(id);const row=[...hosts[draft.month].children].find(n=>n.dataset.noteId===id);if(row)delete row.dataset.editing;}
         else{current.baseRevision=state.notes.find(n=>n.id===id)?.revision;delete current.operationId;delete current.operationText;}
       }
       updateUI();
@@ -178,5 +191,5 @@ function attachPlanEditor(initial, monthNames, status, cards) {
   try{const previous=JSON.parse(localStorage.getItem('polyarik-ad-plan-2026-2027-v1')||'null');if(previous&&Object.values(previous).some(list=>Array.isArray(list)&&list.length)){const backup=el('button','','Скачать прежние заметки из браузера');backup.type='button';backup.addEventListener('click',()=>download({version:1,period:PlanJSON.period,notes:previous},'polyarik-old-notes.json'));tools.append(backup);}}catch(_){}
   updateUI();message('Общий JSON загружен. Для редактирования подключите GitHub.');
   reload(true);
-  return month=>state.notes.filter(note=>note.month===month).map(note=>drafts.get(note.id)?.text??note.text);
+  return month=>state.notes.filter(note=>note.month===month&&note.text.trim()).map(note=>note.text);
 }
