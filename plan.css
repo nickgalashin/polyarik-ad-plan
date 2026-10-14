@@ -7,6 +7,17 @@ button:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px so
 .plan-notes{border-top:1px solid var(--line-soft);margin-top:16px;padding-top:12px}
 .plan-notes h4{font-size:12px;color:var(--ink-2);margin:0 0 10px;font-weight:600}
 .note-row{display:flex;gap:6px;margin-bottom:8px;align-items:start}
+.note-row{flex-wrap:wrap}.note-row textarea{flex:1}
+.note-controls{display:flex;flex-direction:column;gap:6px;max-width:110px}
+.common-version{width:100%;font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--ink-2)}
+.has-conflict textarea{border-color:var(--sun)}
+.accept-common{font:inherit;font-size:11px;cursor:pointer;background:var(--sun-soft);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:6px}
+.github-connect,.plan-history{padding:16px;background:var(--card);border:1px solid var(--line);border-radius:10px;margin:16px 0}
+.github-connect summary,.plan-history summary{cursor:pointer}.github-connect p{font-size:13px;color:var(--ink-2)}
+.github-connect label{display:block;font-size:13px;margin-bottom:5px}.github-connect input{font:inherit;padding:10px;border:1px solid var(--line);border-radius:8px;max-width:100%;width:350px;background:var(--ground);color:var(--ink)}
+.github-connect button{font:inherit;cursor:pointer;padding:10px;margin:5px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px}
+.plan-history li{font-size:13px;border-bottom:1px solid var(--line-soft);padding:10px 0}.history-text{white-space:pre-wrap;overflow-wrap:anywhere}
+button:disabled{opacity:.5;cursor:not-allowed}
 .note-row textarea{font:inherit;font-size:13px;color:var(--ink);background:var(--ground);border:1px solid var(--line);border-radius:8px;padding:9px;min-width:0;width:100%;resize:vertical}
 .remove-note{font-size:20px;padding:4px 10px;min-height:36px}
 .add-note{width:100%;border-style:dashed;color:var(--ink-2);font-size:13px}
