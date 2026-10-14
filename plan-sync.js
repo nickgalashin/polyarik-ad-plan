@@ -14,6 +14,12 @@ function attachPlanEditor(initial, monthNames, status, cards, onNotesChange) {
   const login = el('button','','Подключить'); login.type='button';
   const logout = el('button','','Отключить'); logout.type='button'; logout.hidden=true;
   connect.append(label,input,login,logout); tools.before(connect);
+  function requireAccess(){
+    if(token&&actor)return true;
+    connect.open=true;input.focus();connect.scrollIntoView({block:'center',behavior:'smooth'});
+    message('Для добавления и редактирования подключите личный GitHub-токен выше. После перезагрузки доступ нужно подключить заново.');
+    return false;
+  }
   const refresh = el('button','','Обновить общие данные'); refresh.type='button'; tools.append(refresh);
   const history = el('details','plan-history'); history.append(el('summary','','История изменений'));
   const log = el('ol'); history.append(log); tools.after(history);
@@ -68,6 +74,7 @@ function attachPlanEditor(initial, monthNames, status, cards, onNotesChange) {
         const controls=el('div','note-controls');
         const remove=el('button','remove-note','×');remove.type='button';remove.title='Удалить поле';
         remove.addEventListener('click',()=>{
+          if(!requireAccess())return;
           const current=state.notes.find(n=>n.id===note.id),draft=drafts.get(note.id);
           if(!current){if(window.confirm('Удалить ваш несохранённый черновик?')){drafts.delete(note.id);draw(month);}return;}
           if((draft?.text||current.text).trim()&&!window.confirm('Удалить поле из общего плана?'))return;
@@ -79,7 +86,8 @@ function attachPlanEditor(initial, monthNames, status, cards, onNotesChange) {
         accept.addEventListener('click',()=>{if(!window.confirm('Отбросить ваш несохранённый текст и принять общую версию?'))return;clearTimeout(timers.get(note.id));drafts.delete(note.id);draw(month);});
         const saved=el('div','saved-note');
         const edit=el('button','edit-note','Изменить');edit.type='button';
-        edit.addEventListener('click',()=>{row.dataset.editing='true';draw(month);box.focus();});
+        edit.addEventListener('click',()=>{if(!requireAccess())return;row.dataset.editing='true';draw(month);box.focus();});
+        box.addEventListener('click',()=>{if(box.readOnly)requireAccess();});
         controls.prepend(edit);
         controls.append(remove,accept);row.append(saved,box,controls,el('div','common-version'));host.append(row);
       }
@@ -89,30 +97,31 @@ function attachPlanEditor(initial, monthNames, status, cards, onNotesChange) {
       row.querySelector('.saved-note').hidden=!showSaved;
       box.hidden=showSaved;
       row.classList.toggle('is-saved',showSaved);
-      row.querySelector('.edit-note').hidden=!showSaved||!token;
+      row.querySelector('.edit-note').hidden=!showSaved;
       row.querySelector('.edit-note').setAttribute('aria-label','Изменить поле '+(index+1)+': '+monthNames[month]);
       row.querySelector('.remove-note').hidden=!token&&showSaved;
-      box.disabled=!token;
+      box.disabled=false;box.readOnly=!(token&&actor);
       if(document.activeElement!==box||!draft)box.value=draft?draft.text:note.text;
       box.setAttribute('aria-label',monthNames[month]+': поле '+(index+1));
-      row.querySelector('.remove-note').disabled=!token;
+      row.querySelector('.remove-note').disabled=false;
       row.querySelector('.remove-note').setAttribute('aria-label','Удалить поле '+(index+1)+': '+monthNames[month]);
       row.querySelector('.accept-common').hidden=!draft?.conflict;
       row.classList.toggle('has-conflict',Boolean(draft?.conflict));
       row.querySelector('.common-version').textContent=draft?.conflict?'Общая версия: '+(state.notes.find(n=>n.id===note.id)?.text??'поле удалено'):'';
       row.title=draft?.conflict?'Общая версия: '+(state.notes.find(n=>n.id===note.id)?.text??'поле удалено'):'';
     });
-    host.nextElementSibling.disabled=!token;
+    host.nextElementSibling.disabled=false;
   }
   cards.forEach((card,month)=>{
     const section=el('div','plan-notes');section.append(el('h4','','Общие товары и задачи'));
     const host=el('div','note-fields');hosts[month]=host;
     const add=el('button','add-note','+ Добавить поле');add.type='button';add.setAttribute('aria-label','Добавить поле: '+monthNames[month]);
     add.addEventListener('click',async()=>{
+      if(!requireAccess())return;
       add.disabled=true;
       const id=crypto.randomUUID();
       try{await mutate([{id:crypto.randomUUID(),type:'add',noteId:id,month,text:''}]);draw(month);[...host.children].find(row=>row.dataset.noteId===id)?.querySelector('textarea').focus();}
-      catch(error){message(error.message);}finally{add.disabled=!token;}
+      catch(error){message(error.message);}finally{add.disabled=false;}
     });
     section.append(host,add);card.append(section);
   });
@@ -173,7 +182,7 @@ function attachPlanEditor(initial, monthNames, status, cards, onNotesChange) {
   });
   const fileInput=document.getElementById('plan-file');
   document.getElementById('plan-import').textContent='Добавить заметки из JSON';
-  document.getElementById('plan-import').addEventListener('click',()=>{if(!token){message('Подключите GitHub для импорта в общий JSON');return;}fileInput.click();});
+  document.getElementById('plan-import').addEventListener('click',()=>{if(!requireAccess())return;fileInput.click();});
   fileInput.addEventListener('change',async()=>{
     const file=fileInput.files[0];if(!file)return;
     try{
