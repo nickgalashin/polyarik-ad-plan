@@ -2,13 +2,15 @@ function attachPlanEditor(initial, monthNames, status, cards, onNotesChange, onS
   'use strict';
   const api = 'https://api.github.com/repos/nickgalashin/polyarik-ad-plan/contents/plan-data.json';
   let state = initial, token = '', actor = '', busy = false, queue = Promise.resolve();
+  const tokenKey = 'polyarik-ad-plan:github-token:nickgalashin/polyarik-ad-plan';
+  const forgetToken = () => {try{localStorage.removeItem(tokenKey);}catch(_){}};
   const drafts = new Map(), hosts = [], timers = new Map();
   const message = text => {status.textContent = text;};
   function el(tag, cls, text) {const n=document.createElement(tag); if(cls)n.className=cls; if(text!==undefined)n.textContent=text; return n;}
   const tools = document.querySelector('.plan-tools');
   const connect = el('details', 'github-connect');
   connect.append(el('summary','','Доступ для редактирования'));
-  connect.append(el('p','','Используйте личный GitHub-токен с Contents: Read and write только для nickgalashin/polyarik-ad-plan. Он отправляется только в GitHub и остаётся в памяти до закрытия страницы.'));
+  connect.append(el('p','','Используйте личный GitHub-токен с Contents: Read and write только для nickgalashin/polyarik-ad-plan. Токен сохраняется в этом браузере на устройстве и отправляется только в GitHub. После перезагрузки доступ подключается автоматически. Кнопка «Отключить» удаляет сохранённый токен. На общем компьютере отключайте доступ после работы.'));
   const label = el('label','','Личный GitHub-токен');
   const input = el('input'); input.type='password'; input.autocomplete='off'; input.id='github-token'; label.htmlFor=input.id;
   const login = el('button','','Подключить'); login.type='button';
@@ -17,7 +19,7 @@ function attachPlanEditor(initial, monthNames, status, cards, onNotesChange, onS
   function requireAccess(){
     if(token&&actor)return true;
     connect.closest('.plan-settings').open=true;connect.open=true;input.focus();connect.scrollIntoView({block:'center',behavior:'smooth'});
-    message('Для добавления и редактирования подключите личный GitHub-токен выше. После перезагрузки доступ нужно подключить заново.');
+    message('Для добавления и редактирования подключите личный GitHub-токен выше. После подключения токен сохранится в этом браузере.');
     return false;
   }
   const refresh = el('button','','Обновить общие данные'); refresh.type='button'; tools.append(refresh);
@@ -169,13 +171,34 @@ function attachPlanEditor(initial, monthNames, status, cards, onNotesChange, onS
     try{const file=await read();state=file.state;updateUI();if(!silent)message(drafts.size?'Общие данные обновлены; ваши черновики сохранены в полях':'Общие данные загружены из JSON');}
     catch(error){if(!silent)message(error.message);}
   }
-  login.addEventListener('click',async()=>{
+  function disconnected(){
+    token='';actor='';input.value='';input.hidden=false;label.hidden=false;login.hidden=false;logout.hidden=true;
+    connect.querySelector('summary').textContent='Доступ для редактирования';updateUI();
+  }
+  async function connectToken(candidate){
+    login.disabled=true;token=candidate;message('Проверяем доступ GitHub…');
+    try{
+      const user=await request('https://api.github.com/user');
+      const file=await read();actor=user.login;state=file.state;
+      let remembered=true;try{localStorage.setItem(tokenKey,candidate);}catch(_){remembered=false;}
+      input.value='';input.hidden=true;label.hidden=true;login.hidden=true;logout.hidden=false;
+      logout.textContent='Отключить '+actor;connect.querySelector('summary').textContent='Доступ подключён · '+actor;
+      updateUI();message(remembered?'Доступ подключён · '+actor+' · сохранён в этом браузере':'Доступ подключён · '+actor+'. Браузер запретил сохранение токена; после перезагрузки потребуется повторное подключение.');
+    }catch(error){
+      if(error.status===401)forgetToken();disconnected();message(error.message);
+    }finally{login.disabled=false;}
+  }
+  login.addEventListener('click',()=>{
     const candidate=input.value.trim();if(!candidate){message('Введите личный GitHub-токен');return;}
-    login.disabled=true;token=candidate;
-    try{const user=await request('https://api.github.com/user');actor=user.login;await read();input.value='';input.hidden=true;label.hidden=true;login.hidden=true;logout.hidden=false;logout.textContent='Отключить '+actor;updateUI();await reload();}
-    catch(error){token='';actor='';message(error.message);}finally{login.disabled=false;}
+    connectToken(candidate);
   });
-  logout.addEventListener('click',()=>{if(drafts.size&&!window.confirm('Отключиться? Несохранённый текст останется в полях до закрытия страницы.'))return;token='';actor='';input.hidden=false;label.hidden=false;login.hidden=false;logout.hidden=true;updateUI();message('Доступ отключён. Общий JSON доступен для чтения.');});
+  logout.addEventListener('click',()=>{
+    if(drafts.size&&!window.confirm('Отключиться? Несохранённый текст останется в полях до закрытия страницы.'))return;
+    forgetToken();disconnected();message('Доступ отключён, сохранённый токен удалён из этого браузера.');
+  });
+  window.addEventListener('storage',event=>{
+    if((event.key===tokenKey&&event.newValue!==token||event.key===null)&&token){disconnected();message('Доступ изменён или отключён в другой вкладке. Обновите страницу для подключения.');}
+  });
   refresh.addEventListener('click',()=>reload());
   setInterval(()=>{if(token&&!document.hidden)reload(true);},30000);
   window.addEventListener('beforeunload',event=>{if(drafts.size||busy){event.preventDefault();event.returnValue='';}});
@@ -202,7 +225,8 @@ function attachPlanEditor(initial, monthNames, status, cards, onNotesChange, onS
   });
   try{const previous=JSON.parse(localStorage.getItem('polyarik-ad-plan-2026-2027-v1')||'null');if(previous&&Object.values(previous).some(list=>Array.isArray(list)&&list.length)){const backup=el('button','','Скачать прежние заметки из браузера');backup.type='button';backup.addEventListener('click',()=>download({version:1,period:PlanJSON.period,notes:previous},'polyarik-old-notes.json'));tools.append(backup);}}catch(_){}
   updateUI();message('Общий JSON загружен. Для редактирования подключите GitHub.');
-  reload(true);
+  let savedToken='';try{savedToken=localStorage.getItem(tokenKey)||'';}catch(_){}
+  if(savedToken)connectToken(savedToken);else reload(true);
   const getNotes=month=>state.notes.filter(note=>note.month===month&&note.text.trim()).map(note=>note.text);
   getNotes.records=()=>state.notes.filter(note=>note.text.trim());
   getNotes.schedules=()=>state.schedules||[];
