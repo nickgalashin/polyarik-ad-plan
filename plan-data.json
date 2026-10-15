@@ -1,8 +1,8 @@
 {
   "version": 2,
   "period": "2026-10/2027-09",
-  "revision": 1,
-  "updatedAt": "2026-10-15T06:50:11.494Z",
+  "revision": 2,
+  "updatedAt": "2026-10-15T06:50:39.558Z",
   "rankings": {
     "full": [
       {
@@ -1054,19 +1054,31 @@
       "revision": 1,
       "before": "{\"prepStart\":\"2026-11-01\",\"prepEnd\":\"2026-11-14\",\"launchStart\":\"2026-11-15\",\"launchEnd\":\"2026-11-30\"}",
       "after": "{\"prepStart\":\"2026-12-01\",\"prepEnd\":\"2026-12-14\",\"launchStart\":\"2026-12-15\",\"launchEnd\":\"2026-12-30\"}"
+    },
+    {
+      "id": "ef2d7445-5717-4ecc-a9ff-88d86bd5fad2",
+      "type": "schedule",
+      "noteId": "top:10:1",
+      "month": 10,
+      "productName": "Манишка детская",
+      "actor": "nickgalashin",
+      "at": "2026-10-15T06:50:39.558Z",
+      "revision": 2,
+      "before": "{\"prepStart\":\"2026-12-01\",\"prepEnd\":\"2026-12-14\",\"launchStart\":\"2026-12-15\",\"launchEnd\":\"2026-12-30\"}",
+      "after": "{\"prepStart\":\"2026-11-01\",\"prepEnd\":\"2026-11-14\",\"launchStart\":\"2026-11-15\",\"launchEnd\":\"2026-11-30\"}"
     }
   ],
   "schedules": [
     {
       "key": "top:10:1",
       "month": 10,
-      "prepStart": "2026-12-01",
-      "prepEnd": "2026-12-14",
-      "launchStart": "2026-12-15",
-      "launchEnd": "2026-12-30",
-      "revision": 1,
+      "prepStart": "2026-11-01",
+      "prepEnd": "2026-11-14",
+      "launchStart": "2026-11-15",
+      "launchEnd": "2026-11-30",
+      "revision": 2,
       "updatedBy": "nickgalashin",
-      "updatedAt": "2026-10-15T06:50:11.494Z"
+      "updatedAt": "2026-10-15T06:50:39.558Z"
     }
   ]
 }
