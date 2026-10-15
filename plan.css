@@ -59,3 +59,5 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .schedule-feedback{font-size:13px;min-height:18px;line-height:1.5}.campaign-dates{display:block;color:var(--muted);font-size:11px;margin-top:4px}
 .plan-day.mixed{background:linear-gradient(135deg,var(--frost-soft) 50%,var(--mid-soft) 50%)}.plan-day.empty{background:var(--ground);color:var(--muted)}
 @media(max-width:380px){.schedule-phase{gap:8px;padding:10px}.schedule-phase input{font-size:12px;padding:7px}.schedule-dialog{padding:16px}}
+
+.plan-settings{margin:24px 0;padding:16px;border:1px solid var(--line);border-radius:10px}.plan-settings>summary{cursor:pointer;color:var(--ink-2);font-size:13px}

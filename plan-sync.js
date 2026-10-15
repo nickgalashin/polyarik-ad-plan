@@ -16,7 +16,7 @@ function attachPlanEditor(initial, monthNames, status, cards, onNotesChange, onS
   connect.append(label,input,login,logout); tools.before(connect);
   function requireAccess(){
     if(token&&actor)return true;
-    connect.open=true;input.focus();connect.scrollIntoView({block:'center',behavior:'smooth'});
+    connect.closest('.plan-settings').open=true;connect.open=true;input.focus();connect.scrollIntoView({block:'center',behavior:'smooth'});
     message('Для добавления и редактирования подключите личный GitHub-токен выше. После перезагрузки доступ нужно подключить заново.');
     return false;
   }

@@ -378,7 +378,7 @@
     *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   }
 </style>
-<link rel="stylesheet" href="plan.css?v=schedule-1">
+<link rel="stylesheet" href="plan.css?v=clean-plan-1">
 </head>
 <body>
 <div class="wrap">
@@ -459,7 +459,7 @@
   <section id="panel-plan" role="tabpanel" aria-labelledby="tab-plan" hidden>
     <p class="dek">Рекламный план на <b>01.10.2026 — 30.09.2027</b>. Топы из вкладки «За год» перенесены на месяц раньше: февраль → январь, январь → декабрь. Числа справа — исторические заказы, а не прогноз.</p>
 
-    <div class="plan-tools"><span id="plan-save-status" role="status" aria-live="polite">Загрузка общего JSON…</span><button type="button" id="plan-export">Экспорт заметок</button><button type="button" id="plan-import">Импорт заметок</button><input id="plan-file" type="file" accept="application/json,.json" hidden></div>
+
     <fieldset class="legend" id="legend-plan">
       <legend>Ассортимент · 22 сентября 2025 — 22 сентября 2026</legend>
       <button type="button" class="chip s" data-cat="s" aria-pressed="true"><span class="swatch"></span>Лето <span class="n" data-count="plan-s"></span></button>
@@ -488,14 +488,17 @@
       <div class="phase-legend"><span class="prep-key">Подготовка</span><span class="launch-key">Запуск</span><span>01.10.2026 — 30.09.2027</span></div>
       <div id="plan-calendar" class="plan-calendar"></div>
     </section>
+    <details class="plan-settings"><summary>Настройки и данные</summary>
+    <div class="plan-tools"><span id="plan-save-status" role="status" aria-live="polite">Загрузка общего JSON…</span><button type="button" id="plan-export">Экспорт заметок</button><button type="button" id="plan-import">Импорт заметок</button><input id="plan-file" type="file" accept="application/json,.json" hidden></div>
+    </details>
     <footer class="note"><p>Основа — топ-7 за 22 сентября 2025 — 22 сентября 2026 из «Объединённой базы заказов.xlsx». Пунктир отмечает месяцы с малым числом исходных заказов. Общие заметки и история действий хранятся в plan-data.json. Для редактирования подключите свой доступ GitHub.</p></footer>
   </section>
 
 </div>
 
-<script src="plan-model.js?v=schedule-1"></script>
-<script src="plan-sync.js?v=schedule-1"></script>
-<script src="plan.js?v=schedule-1"></script>
+<script src="plan-model.js?v=clean-plan-1"></script>
+<script src="plan-sync.js?v=clean-plan-1"></script>
+<script src="plan.js?v=clean-plan-1"></script>
 <script>
 (async function(){
   var sharedState;
